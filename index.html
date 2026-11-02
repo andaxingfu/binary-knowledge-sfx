@@ -511,10 +511,10 @@
   let audioCtx = null;
   let ambientNodes = null;
 
-  // ─── Procedural vibe BGM (Web Audio; MP3 optional debug) ──────────
-  // Inspired by vibe breakdown: 113 BPM, ~8.5s loop, F pedal, Eb/F/Fm/Fm.
-  // Not a copyrighted stem — synthesized locally.
-  const USE_MP3_BGM = false; // debug: true → audio/bgm.mp3 instead of synth
+  // ─── Vibe BGM: extracted reference MP3 (match source) or procedural synth ──
+  // USE_MP3_BGM=true → audio/bgm.mp3 (extracted Douyin vibe reference bed for matching source).
+  // false → local Web Audio synth (113 BPM, F pedal, Eb/F/Fm/Fm) — not a copyrighted stem.
+  const USE_MP3_BGM = true; // reference mode: original vibe BGM
   const BGM_BPM = 113;
   const BGM_BEAT = 60 / BGM_BPM;           // ≈0.531s
   const BGM_LOOP_BEATS = 16;               // 16 beats ≈ 8.495s
@@ -762,10 +762,27 @@
     return audioCtx;
   }
 
-  // Browsers require a user gesture + resolved resume() before oscillators are audible.
+  // Browsers require a user gesture + resolved resume() before oscillators / HTMLAudio are audible.
   let audioUnlockPromise = null;
   function unlockAudio() {
     const ac = ensureAudio();
+    // Prime HTMLAudioElement under the same gesture so async startBgm() is not autoplay-blocked.
+    if (USE_MP3_BGM) {
+      try {
+        const a = ensureMp3Bgm();
+        if (a.paused) {
+          const p = a.play();
+          if (p && p.then) {
+            p.then(function () {
+              // Keep silent until startBgm fades up; pause if film not actually playing yet.
+              if (!playing) {
+                try { a.pause(); } catch (_) {}
+              }
+            }).catch(function () {});
+          }
+        }
+      } catch (_) {}
+    }
     if (ac.state === "running") {
       return Promise.resolve(ac);
     }
@@ -878,7 +895,7 @@
     });
   }
 
-  // ─── Narration (disabled: SFX + synth BGM only) ───────────────────
+  // ─── Narration (disabled: SFX + BGM bed only) ─────────────────────
   const ENABLE_NARRATION = false; // set true to restore baked MP3 / Web Speech VO
   let narrAudio = null;
   let uttering = null;
@@ -912,7 +929,7 @@
   }
 
   function speak(text, audioSrc) {
-    if (!ENABLE_NARRATION) return; // no VO load/play; keep SFX + synth bed
+    if (!ENABLE_NARRATION) return; // no VO load/play; keep SFX + BGM bed
     stopSpeak();
     duckBgm(true);
     if (audioSrc) {
