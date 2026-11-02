@@ -518,9 +518,9 @@
   const BGM_BPM = 113;
   const BGM_BEAT = 60 / BGM_BPM;           // ≈0.531s
   const BGM_LOOP_BEATS = 16;               // 16 beats ≈ 8.495s
-  const BGM_VOL = 0.14;
-  const BGM_DUCK = 0.055;
-  const BGM_FADE = 0.8;
+  const BGM_VOL = 0.32;
+  const BGM_DUCK = 0.12;
+  const BGM_FADE = 0.55;
   // Chord cells (Hz): Eb · F · Fm · Fm — sparse cinematic pads
   const BGM_CHORDS = [
     [155.56, 196.00, 233.08], // Eb
@@ -557,14 +557,14 @@
     bassLp.frequency.value = 260;
     bassLp.Q.value = 0.7;
     const bassG = ac.createGain();
-    bassG.gain.value = 0.42;
+    bassG.gain.value = 0.55;
     bass.connect(bassLp); bassLp.connect(bassG); bassG.connect(master);
 
     const sub = ac.createOscillator();
     sub.type = "sine";
     sub.frequency.value = BGM_F1;
     const subG = ac.createGain();
-    subG.gain.value = 0.22;
+    subG.gain.value = 0.32;
     sub.connect(subG); subG.connect(master);
 
     bass.start();
@@ -582,7 +582,7 @@
     f.type = "lowpass";
     f.frequency.value = 180;
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.045, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
     o.connect(f); f.connect(g); g.connect(master);
     o.start(t);
@@ -599,7 +599,7 @@
       o.frequency.value = hz;
       f.type = "lowpass";
       f.frequency.value = 900;
-      const peak = 0.028 - i * 0.006;
+      const peak = 0.065 - i * 0.012;
       g.gain.setValueAtTime(0.0001, t);
       g.gain.exponentialRampToValueAtTime(Math.max(0.004, peak), t + 0.35);
       g.gain.setValueAtTime(Math.max(0.004, peak * 0.85), t + dur * 0.55);
@@ -678,20 +678,20 @@
       fadeBgmTo(BGM_VOL, BGM_FADE);
       return;
     }
-    ensureAudio();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    ensureBgmGraph();
-    if (!bgmRunning) {
-      bgmRunning = true;
-      // Resume from next beat; phase reset only via resetBgmPhase / stopBgm(true)
-      if (!bgmNextBeatTime || bgmNextBeatTime < audioCtx.currentTime) {
-        bgmNextBeatTime = audioCtx.currentTime + 0.06;
+    unlockAudio().then(function () {
+      ensureBgmGraph();
+      if (!bgmRunning) {
+        bgmRunning = true;
+        // Resume from next beat; phase reset only via resetBgmPhase / stopBgm(true)
+        if (!bgmNextBeatTime || bgmNextBeatTime < audioCtx.currentTime) {
+          bgmNextBeatTime = audioCtx.currentTime + 0.06;
+        }
+        bgmSchedulerTick();
+        if (bgmSchedTimer) clearInterval(bgmSchedTimer);
+        bgmSchedTimer = setInterval(bgmSchedulerTick, 100);
       }
-      bgmSchedulerTick();
-      if (bgmSchedTimer) clearInterval(bgmSchedTimer);
-      bgmSchedTimer = setInterval(bgmSchedulerTick, 100);
-    }
-    fadeBgmTo(BGM_VOL, BGM_FADE);
+      fadeBgmTo(BGM_VOL, BGM_FADE);
+    });
   }
 
   function pauseBgm() {
@@ -762,11 +762,36 @@
     return audioCtx;
   }
 
+  // Browsers require a user gesture + resolved resume() before oscillators are audible.
+  let audioUnlockPromise = null;
+  function unlockAudio() {
+    const ac = ensureAudio();
+    if (ac.state === "running") {
+      return Promise.resolve(ac);
+    }
+    // Re-resume whenever suspended (iOS may re-suspend); coalesce in-flight resumes.
+    if (audioUnlockPromise) return audioUnlockPromise;
+    audioUnlockPromise = Promise.resolve()
+      .then(function () {
+        if (ac.state === "suspended") return ac.resume();
+      })
+      .then(function () {
+        if (ac.state === "suspended") return ac.resume();
+      })
+      .then(function () { return ac; })
+      .catch(function () { return ac; })
+      .then(function (ctx) {
+        audioUnlockPromise = null;
+        return ctx;
+      });
+    return audioUnlockPromise;
+  }
+
   function startAmbient() {
     const ac = ensureAudio();
     if (ambientNodes) return;
     const master = ac.createGain();
-    master.gain.value = 0.045;
+    master.gain.value = 0.07;
     master.connect(ac.destination);
 
     // soft low drone
@@ -814,40 +839,43 @@
   }
 
   function sfxClick() {
-    const ac = ensureAudio();
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = "sine";
-    o.frequency.value = 880;
-    g.gain.setValueAtTime(0.08, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.08);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime + 0.09);
+    unlockAudio().then(function (ac) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.18, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.09);
+      o.connect(g); g.connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + 0.1);
+    });
   }
 
   function sfxBass() {
-    const ac = ensureAudio();
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = "sine";
-    o.frequency.setValueAtTime(90, ac.currentTime);
-    o.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.35);
-    g.gain.setValueAtTime(0.18, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime + 0.42);
+    unlockAudio().then(function (ac) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(90, ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.35);
+      g.gain.setValueAtTime(0.30, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.4);
+      o.connect(g); g.connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + 0.42);
+    });
   }
 
   function sfxType() {
-    const ac = ensureAudio();
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = "square";
-    o.frequency.value = 1200 + Math.random() * 400;
-    g.gain.setValueAtTime(0.03, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime + 0.05);
+    unlockAudio().then(function (ac) {
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "square";
+      o.frequency.value = 1200 + Math.random() * 400;
+      g.gain.setValueAtTime(0.07, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.04);
+      o.connect(g); g.connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + 0.05);
+    });
   }
 
   // ─── Narration (disabled: SFX + synth BGM only) ───────────────────
@@ -1400,9 +1428,6 @@
 
   // ─── Playback controls ────────────────────────────────────────────
   function play() {
-    ensureAudio();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    startAmbient();
     if (elapsed >= TOTAL) elapsed = 0;
     t0 = performance.now() - elapsed * 1000;
     playing = true;
@@ -1410,10 +1435,15 @@
     btnPlay.textContent = "❚❚";
     endcard.classList.remove("show");
     controls.classList.add("visible");
-    startBgm();
     // re-trigger beat (narration gated by ENABLE_NARRATION)
     spokenIdx = -1;
     lastBeatIdx = -1;
+    // Must wait for AudioContext.resume() or Safari/Chrome mobile stay silent.
+    unlockAudio().then(function () {
+      if (!playing) return;
+      startAmbient();
+      startBgm();
+    });
   }
 
   function pause() {
@@ -1454,7 +1484,11 @@
   function startFilm() {
     cover.classList.add("hide");
     setTimeout(() => { cover.style.display = "none"; }, 900);
-    play();
+    // Gesture → unlock audio, audible click proves the graph is live, then play.
+    unlockAudio().then(function () {
+      sfxClick();
+      play();
+    });
   }
 
   // ─── Events ───────────────────────────────────────────────────────
