@@ -344,121 +344,111 @@
 
   // ─── Timeline (seconds) ───────────────────────────────────────────
   // Total ~ 3:40
-  const TOTAL = 220;
+  // TOTAL ≈ BGM (~160s). Cuts prefer 8.5s loop heads (113 BPM × 16 beats).
+  const LOOP = 8.5;
+  const TOTAL = 160;
 
   const beats = [
-    // HOOK 0–28
+    // HOOK 0–12 — dense like source; settle on loop head at 8.5
     { t: 0.0,  act: "hook", chapter: "00 序  PROLOGUE",
-      cn: "亮。", en: "", speak: "亮。", audio: "audio/n24.mp3", audio: "audio/n01.mp3", scene: "hook_on" },
-    { t: 3.2,  act: "hook",
-      cn: "亮。", en: "On.", speak: "下一秒呢？", audio: "audio/n25.mp3", audio: "audio/n02.mp3", scene: "hook_blank",
+      cn: "亮。", en: "", speak: "亮。", scene: "hook_on" },
+    { t: 3.0,  act: "hook",
+      cn: "亮。", en: "On.", speak: "下一秒呢？", scene: "hook_blank",
       sub: "下一秒呢？<span class='en'>What comes next?</span>" },
-    { t: 7.5,  act: "hook",
-      cn: "灭。", en: "Off.", speak: "灭。你已经猜到了。", audio: "audio/n03.mp3", scene: "hook_off",
+    { t: 6.0,  act: "hook",
+      cn: "灭。", en: "Off.", speak: "灭。你已经猜到了。", scene: "hook_off",
       sub: "你已经猜到了。<span class='en'>You already knew.</span>" },
-    { t: 12.5, act: "hook",
+    { t: 8.5,  act: "hook",
       cn: "只有两种可能。", en: "Only two possibilities.",
-      speak: "只有两种可能时，信息最干净。", audio: "audio/n04.mp3", scene: "hook_two",
+      speak: "只有两种可能时，信息最干净。", scene: "hook_two",
       sub: "信息，最干净。<span class='en'>Information, at its cleanest.</span>" },
-    { t: 19.0, act: "hook",
+    { t: 12.0, act: "hook",
       cn: "二进制", en: "BINARY",
-      speak: "这就是二进制。用两个符号，描述整个世界。", audio: "audio/n05.mp3", scene: "title",
+      speak: "这就是二进制。用两个符号，描述整个世界。", scene: "title",
       sub: "用两个符号，描述整个世界。<span class='en'>Two symbols. The whole world.</span>" },
 
-    // ACT 1 28–62
-    { t: 28.0, act: "1", chapter: "01 基本单元  THE BIT",
+    // ACT 1 ~17–28 — one idea: the bit (maps to source ① speed window)
+    { t: 17.0, act: "1", chapter: "01 基本单元  THE BIT",
       cn: "一盏灯。", en: "A single lamp.",
-      speak: "一盏灯。亮，或者灭。", audio: "audio/n06.mp3", scene: "lamp",
+      speak: "一盏灯。亮，或者灭。", scene: "lamp",
       sub: "开，或者关。<span class='en'>On, or off.</span>" },
-    { t: 35.0, act: "1",
+    { t: 21.25, act: "1",
       cn: "一个比特。", en: "One bit.",
-      speak: "这就是一个比特。信息的最小单位。", audio: "audio/n07.mp3", scene: "bit_intro",
+      speak: "这就是一个比特。信息的最小单位。", scene: "bit_intro",
       sub: "信息的最小单位。<span class='en'>The smallest unit of information.</span>" },
-    { t: 42.0, act: "1",
+    { t: 25.5, act: "1",
       cn: "0　或　1", en: "Nothing in between.",
-      speak: "零，或一。中间没有别的状态。", audio: "audio/n08.mp3", scene: "bit_toggle",
+      speak: "零，或一。中间没有别的状态。", scene: "bit_toggle",
       sub: "点按开关试试。<span class='en'>Tap a switch.</span>",
       bits: true },
-    { t: 52.0, act: "1",
-      cn: "八个比特，叫一字节。", en: "Eight bits make a byte.",
-      speak: "八个比特，叫一字节。足以写下任何一个英文字母。", audio: "audio/n09.mp3", scene: "byte",
-      sub: "足以写下任何一个字母。<span class='en'>Enough for any letter.</span>",
-      bits: 8 },
 
-    // ACT 2 62–100
-    { t: 62.0, act: "2", chapter: "02 核心理论  PLACE VALUE",
+    // ACT 2 ~34–51 — place value / definition (maps to source ② loop)
+    { t: 34.0, act: "2", chapter: "02 核心理论  PLACE VALUE",
       cn: "位置，决定重量。", en: "Place decides weight.",
-      speak: "位置，决定重量。", audio: "audio/n10.mp3", scene: "place_intro" },
-    { t: 68.0, act: "2",
-      cn: "从右往左，每一次乘以二。", en: "Right to left, each place doubles.",
-      speak: "从右往左，每一位的权重，是前一位的两倍。", audio: "audio/n11.mp3", scene: "powers",
+      speak: "位置，决定重量。", scene: "place_intro" },
+    { t: 42.5, act: "2",
+      cn: "每一次 × 2", en: "Right to left, each place doubles.",
+      speak: "从右往左，每一位的权重，是前一位的两倍。", scene: "powers",
       eq: "2⁰  2¹  2²  2³  2⁴  2⁵  2⁶  2⁷" },
-    { t: 78.0, act: "2",
+    { t: 51.0, act: "2",
       cn: "1 0 1 1", en: "",
-      speak: "一，零，一，一。等于十一。", audio: "audio/n12.mp3", scene: "decode",
+      speak: "一，零，一，一。等于十一。", scene: "decode",
       eq: "1·8 + 0·4 + 1·2 + 1·1  =  11₁₀",
-      sub: "二进制的 1011，就是十进制的 11。<span class='en'>Binary 1011 is decimal 11.</span>" },
-    { t: 88.0, act: "2",
-      cn: "莱布尼茨看见了。", en: "Leibniz saw it first, in 1703.",
-      speak: "一七零三年，莱布尼茨写下：一切都可以用零与一表示。", audio: "audio/n13.mp3", scene: "leibniz",
-      sub: "一切，都可以用零与一表示。<span class='en'>Everything, from zero and one.</span>" },
+      sub: "1011₂  =  11₁₀<span class='en'>Binary 1011 is decimal 11.</span>" },
 
-    // ACT 3 100–140
-    { t: 100.0, act: "3", chapter: "03 摩擦  FRICTION",
-      cn: "人们以为：那只是计算机的事。", en: "People think: that's only for computers.",
-      speak: "人们以为，二进制只是计算机的事。", audio: "audio/n14.mp3", scene: "misread" },
-    { t: 108.0, act: "3",
-      cn: "可噪声，不认这个边界。", en: "Noise does not respect that border.",
-      speak: "可噪声，不认这个边界。一位翻转，意义就变了。", audio: "audio/n15.mp3", scene: "noise",
+    // ACT 3 ~59.5–76.5 — friction (maps to source ③ pinned bass)
+    { t: 59.5, act: "3", chapter: "03 摩擦  FRICTION",
+      cn: "不只是计算机的事。", en: "Not only for computers.",
+      speak: "人们以为，二进制只是计算机的事。", scene: "misread" },
+    { t: 68.0, act: "3",
+      cn: "噪声，不认边界。", en: "Noise ignores the border.",
+      speak: "可噪声，不认这个边界。一位翻转，意义就变了。", scene: "noise",
       eq: "1011 → 1001",
-      sub: "一位翻转，十一变成九。<span class='en'>One flip: eleven becomes nine.</span>" },
-    { t: 118.0, act: "3",
+      sub: "一位翻转：11 → 9<span class='en'>One flip: eleven becomes nine.</span>" },
+    { t: 76.5, act: "3",
       cn: "所以要冗余。", en: "So we add redundancy.",
-      speak: "所以要冗余。多写几位，才能在噪声里活下来。", audio: "audio/n16.mp3", scene: "redundancy",
-      sub: "多写几位，才能在噪声里活下来。<span class='en'>Extra bits, to survive the noise.</span>" },
-    { t: 128.0, act: "3",
-      cn: "奇偶校验。海明码。", en: "Parity. Hamming codes.",
-      speak: "奇偶校验。海明码。用多余的比特，换回正确的信息。", audio: "audio/n17.mp3", scene: "ecc",
-      eq: "data + parity → recoverable truth" },
+      speak: "所以要冗余。多写几位，才能在噪声里活下来。", scene: "redundancy",
+      eq: "data + parity → truth",
+      sub: "多写几位，才能活下来。<span class='en'>Extra bits, to survive the noise.</span>" },
 
-    // ACT 4 140–178
-    { t: 140.0, act: "4", chapter: "04 宏大尺度  SCALE",
-      cn: "二的十次方，约一千。", en: "2¹⁰ ≈ 1,024 — a kibibyte.",
-      speak: "二的十次方，约一千。一 kibibyte。", audio: "audio/n18.mp3", scene: "scale_k",
+    // ACT 4 ~85–110.5 — scale (maps to source ④ home + ⑤ full mix)
+    { t: 85.0, act: "4", chapter: "04 宏大尺度  SCALE",
+      cn: "2¹⁰ ≈ 1,024", en: "A kibibyte.",
+      speak: "二的十次方，约一千。", scene: "scale_k",
       eq: "2¹⁰ ≈ 10³" },
-    { t: 148.0, act: "4",
-      cn: "二的三十次方，约十亿。", en: "2³⁰ ≈ 1,073,741,824 — a gibibyte.",
-      speak: "二的三十次方，约十亿。一部高清电影，装得下。", audio: "audio/n19.mp3", scene: "scale_g",
+    { t: 93.5, act: "4",
+      cn: "2³⁰ ≈ 十亿", en: "A gibibyte.",
+      speak: "二的三十次方，约十亿。", scene: "scale_g",
       eq: "2³⁰ ≈ 10⁹" },
-    { t: 157.0, act: "4",
-      cn: "旅行者金唱片。", en: "The Voyager Golden Record.",
-      speak: "旅行者金唱片。用凹槽编码图像与声音，送向星际。", audio: "audio/n20.mp3", scene: "voyager",
-      sub: "凹槽里的二进制，飞向未知。<span class='en'>Bits in grooves, toward the unknown.</span>" },
-    { t: 168.0, act: "4",
-      cn: "DNA：四种碱基，两位一码。", en: "DNA: four bases, two bits each.",
-      speak: "脱氧核糖核酸。四种碱基，恰好两位一码。生命，也在算。", audio: "audio/n21.mp3", scene: "dna",
+    { t: 102.0, act: "4",
+      cn: "旅行者金唱片。", en: "Voyager Golden Record.",
+      speak: "旅行者金唱片。用凹槽编码图像与声音，送向星际。", scene: "voyager",
+      sub: "凹槽里的比特，飞向未知。<span class='en'>Bits in grooves, toward the unknown.</span>" },
+    { t: 110.5, act: "4",
+      cn: "DNA：两位一码。", en: "Four bases, two bits each.",
+      speak: "四种碱基，恰好两位一码。生命，也在算。", scene: "dna",
       eq: "A C G T  ≈  00  01  10  11" },
 
-    // ACT 5 + EPILOGUE 178–220
-    { t: 178.0, act: "5", chapter: "05 余响  EPILOGUE",
-      cn: "世界，可以被问成是与否。", en: "The world can be asked as yes or no.",
-      speak: "世界，可以被问成一连串的是与否。", audio: "audio/n22.mp3", scene: "philosophy" },
-    { t: 188.0, act: "5",
+    // ACT 5 + EPILOGUE ~119–160 — philosophy + hook callback + 「停。」(⑥⑦⑧)
+    { t: 119.0, act: "5", chapter: "05 余响  EPILOGUE",
+      cn: "世界，可被问成是与否。", en: "Yes or no, again and again.",
+      speak: "世界，可以被问成一连串的是与否。", scene: "philosophy" },
+    { t: 127.5, act: "5",
       cn: "每一个答案，是一个比特。", en: "Each answer is one bit.",
-      speak: "每一个答案，是一个比特。足够的比特，拼出你看到的一切。", audio: "audio/n23.mp3", scene: "all_bits",
+      speak: "每一个答案，是一个比特。", scene: "all_bits",
       sub: "足够的比特，拼出你看到的一切。<span class='en'>Enough bits assemble all you see.</span>" },
-    { t: 198.0, act: "5",
+    { t: 136.0, act: "5",
       cn: "亮。<span class='cursor'></span>", en: "",
       speak: "亮。", scene: "callback_on" },
-    { t: 203.0, act: "5",
-      cn: "亮。<span class='cursor'></span>", en: "",
+    { t: 144.5, act: "5",
+      cn: "____", en: "",
       speak: "下一秒呢？", scene: "callback_blank",
       sub: "下一秒呢？<span class='en'>What comes next?</span>" },
-    { t: 209.0, act: "5",
-      cn: "____", en: "",
-      speak: "这一次，由你来填。", audio: "audio/n26.mp3", scene: "callback_blank2",
+    { t: 153.0, act: "end", chapter: "",
+      cn: "停。", en: "",
+      speak: "停。", scene: "callback_blank2",
       sub: "这一次，由你来填。<span class='en'>This time, the blank is yours.</span>" },
-    { t: 216.0, act: "end", chapter: "",
+    { t: 158.0, act: "end", chapter: "",
       cn: "", en: "", speak: "", scene: "end" },
   ];
 
@@ -673,6 +663,7 @@
   function startBgm() {
     if (USE_MP3_BGM) {
       const a = ensureMp3Bgm();
+      syncBgmToFilm();
       const p = a.play();
       if (p && p.catch) p.catch(function () {});
       fadeBgmTo(BGM_VOL, BGM_FADE);
@@ -743,9 +734,19 @@
     else fadeBgmTo(BGM_VOL, 0.45);
   }
 
+  // Lock MP3 phase to film clock so picture + bed stay on the same 8.5s grid.
+  function syncBgmToFilm() {
+    if (!USE_MP3_BGM) return;
+    const a = ensureMp3Bgm();
+    const dur = (a.duration && isFinite(a.duration) && a.duration > 0) ? a.duration : TOTAL;
+    let t = elapsed % dur;
+    if (t < 0) t += dur;
+    try { a.currentTime = t; } catch (_) {}
+  }
+
   function resetBgmPhase() {
     if (USE_MP3_BGM) {
-      if (bgm) { try { bgm.currentTime = 0; } catch (_) {} }
+      syncBgmToFilm();
       return;
     }
     bgmBeatIndex = 0;
@@ -1483,8 +1484,9 @@
     lastBeatIdx = -1;
     stopSpeak();
     endcard.classList.remove("show");
+    syncBgmToFilm();
     if (playing) {
-      // keep playing
+      // keep playing; BGM already scrubbed to film phase
     }
   }
 
